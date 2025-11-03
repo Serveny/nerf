@@ -11,7 +11,7 @@ import json
 def img2mse(x, y): return tf.reduce_mean(tf.square(x - y))
 
 
-def mse2psnr(x): return -10.*tf.log(x)/tf.log(10.)
+def mse2psnr(x): return -10.*tf.math.log(x)/tf.math.log(10.)
 
 
 def to8b(x): return (255*np.clip(x, 0, 1)).astype(np.uint8)
@@ -87,7 +87,7 @@ def init_nerf_model(D=8, W=256, input_ch=3, input_ch_views=3, output_ch=4, skips
     input_ch = int(input_ch)
     input_ch_views = int(input_ch_views)
 
-    inputs = tf.keras.Input(shape=(input_ch + input_ch_views))
+    inputs = tf.keras.Input(shape=(input_ch + input_ch_views,))
     inputs_pts, inputs_views = tf.split(inputs, [input_ch, input_ch_views], -1)
     inputs_pts.set_shape([None, input_ch])
     inputs_views.set_shape([None, input_ch_views])
