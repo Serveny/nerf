@@ -5,35 +5,40 @@ import imageio
 import json
 
 
-trans_t = lambda t: tf.convert_to_tensor(
-    [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, t],
-        [0, 0, 0, 1],
-    ],
-    dtype=tf.float32,
-)
+def trans_t(t):
+    return tf.convert_to_tensor(
+        [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, t],
+            [0, 0, 0, 1],
+        ],
+        dtype=tf.float32,
+    )
 
-rot_phi = lambda phi: tf.convert_to_tensor(
-    [
-        [1, 0, 0, 0],
-        [0, tf.cos(phi), -tf.sin(phi), 0],
-        [0, tf.sin(phi), tf.cos(phi), 0],
-        [0, 0, 0, 1],
-    ],
-    dtype=tf.float32,
-)
 
-rot_theta = lambda th: tf.convert_to_tensor(
-    [
-        [tf.cos(th), 0, -tf.sin(th), 0],
-        [0, 1, 0, 0],
-        [tf.sin(th), 0, tf.cos(th), 0],
-        [0, 0, 0, 1],
-    ],
-    dtype=tf.float32,
-)
+def rot_phi(phi):
+    return tf.convert_to_tensor(
+        [
+            [1, 0, 0, 0],
+            [0, tf.cos(phi), -tf.sin(phi), 0],
+            [0, tf.sin(phi), tf.cos(phi), 0],
+            [0, 0, 0, 1],
+        ],
+        dtype=tf.float32,
+    )
+
+
+def rot_theta(th):
+    return tf.convert_to_tensor(
+        [
+            [tf.cos(th), 0, -tf.sin(th), 0],
+            [0, 1, 0, 0],
+            [tf.sin(th), 0, tf.cos(th), 0],
+            [0, 0, 0, 1],
+        ],
+        dtype=tf.float32,
+    )
 
 
 def pose_spherical(theta, phi, radius):
@@ -91,7 +96,9 @@ def load_blender_data(basedir, half_res=False, testskip=1):
     )
 
     if half_res:
-        imgs = tf.image.resize_area(imgs, [400, 400]).numpy()
+        imgs = tf.image.resize(
+            imgs, [400, 400], method=tf.image.ResizeMethod.AREA
+        ).numpy()
         H = H // 2
         W = W // 2
         focal = focal / 2.0

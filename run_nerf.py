@@ -153,7 +153,9 @@ def render_rays(
         depth_map = tf.reduce_sum(weights * z_vals, axis=-1)
 
         # Disparity map is inverse depth.
-        disp_map = 1.0 / tf.maximum(1e-10, depth_map / tf.reduce_sum(weights, axis=-1))
+        acc = tf.reduce_sum(weights, axis=-1)
+        depth_mean = tf.math.divide_no_nan(depth_map, acc)
+        disp_map = 1.0 / tf.maximum(1e-10, depth_mean)
 
         # Sum of weights along each ray. This value is in [0, 1] up to numerical error.
         acc_map = tf.reduce_sum(weights, -1)

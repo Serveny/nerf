@@ -98,28 +98,31 @@ def init_nerf_model(
     input_ch_views = int(input_ch_views)
 
     inputs = keras.Input(shape=(input_ch + input_ch_views,))
-    inputs_pts, inputs_views = tf.split(inputs, [input_ch, input_ch_views], -1)
-    inputs_pts.set_shape([None, input_ch])
-    inputs_views.set_shape([None, input_ch_views])
+    inputs_pts, inputs_views = keras.layers.Lambda(
+        lambda x: tf.split(x, [input_ch, input_ch_views], axis=-1),
+        name="split_inputs",
+    )(inputs)
 
     print(inputs.shape, inputs_pts.shape, inputs_views.shape)
     outputs = inputs_pts
     for i in range(D):
         outputs = dense(W)(outputs)
         if i in skips:
-            outputs = tf.concat([inputs_pts, outputs], -1)
+            outputs = keras.layers.Concatenate(axis=-1)([inputs_pts, outputs])
 
     if use_viewdirs:
         alpha_out = dense(1, act=None)(outputs)
         bottleneck = dense(256, act=None)(outputs)
-        inputs_viewdirs = tf.concat([bottleneck, inputs_views], -1)  # concat viewdirs
+        inputs_viewdirs = keras.layers.Concatenate(axis=-1)(
+            [bottleneck, inputs_views]
+        )  # concat viewdirs
         outputs = inputs_viewdirs
         # The supplement to the paper states there are 4 hidden layers here, but this is an error since
         # the experiments were actually run with 1 hidden layer, so we will leave it as 1.
         for i in range(1):
             outputs = dense(W // 2)(outputs)
         outputs = dense(3, act=None)(outputs)
-        outputs = tf.concat([outputs, alpha_out], -1)
+        outputs = keras.layers.Concatenate(axis=-1)([outputs, alpha_out])
     else:
         outputs = dense(output_ch, act=None)(outputs)
 
